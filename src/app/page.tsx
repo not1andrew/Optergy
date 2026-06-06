@@ -5,7 +5,7 @@ import { CATEGORIES, getCategory } from "@/data/categories";
 import { DEFAULT_STATE_CODE, getState, getTariffOffers, STATES } from "@/data/tariffs";
 import { costBreakdown } from "@/lib/calc";
 import Results from "@/components/Results";
-
+import Scanner from "@/components/Scanner";
 
 export default function Home() {
   const [categoryId, setCategoryId] = useState(CATEGORIES[0].id);
@@ -13,7 +13,7 @@ export default function Home() {
   const [offerId, setOfferId] = useState(getTariffOffers(DEFAULT_STATE_CODE)[0].id);
   const [kwhInput, setKwhInput] = useState("");
   const [rateInput, setRateInput] = useState("");
-  const [stars] = useState<number | undefined>();
+  const [stars, setStars] = useState<number | undefined>();
   const [showResults, setShowResults] = useState(false);
   const offers = getTariffOffers(stateCode);
   const selected = offers.find(item => item.id === offerId) ?? offers[0];
@@ -29,7 +29,7 @@ export default function Home() {
       <label>Appliance <select value={categoryId} onChange={event => {setCategoryId(event.target.value);setShowResults(false);}}>
         {CATEGORIES.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}
       </select></label>
-      
+      <Scanner categoryId={categoryId} onScanStart={() => {setShowResults(false);setKwhInput("");setStars(undefined);}} onResult={result => {setKwhInput(result.kwhPerYear?.toString() ?? "");setStars(result.stars);setShowResults(false);}} />
       <label>Annual energy (kWh) <input type="number" min="1" value={kwhInput} onChange={event => {setKwhInput(event.target.value);setShowResults(false);}} /></label>
       {stars !== undefined && <p>Energy rating: {stars} stars. Check this against your label.</p>}
       <label>State <select value={stateCode} onChange={event => {
