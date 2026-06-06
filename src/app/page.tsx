@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { CATEGORIES, getCategory } from "@/data/categories";
 import { DEFAULT_STATE_CODE, getState, getTariffOffers, STATES } from "@/data/tariffs";
-import { costBreakdown, formatAudPrecise } from "@/lib/calc";
-
+import { costBreakdown } from "@/lib/calc";
+import Results from "@/components/Results";
 
 
 export default function Home() {
@@ -44,6 +44,6 @@ export default function Home() {
       <label>Electricity usage rate (c/kWh) <input type="number" min="0.0001" step="any" value={rateInput} onChange={event=>{setRateInput(event.target.value);setShowResults(false);}} /></label>
       <button disabled={!valid}>Calculate</button>
     </form>
-    {showResults && costs && <p>{category.label}: {formatAudPrecise(costs.annualCost)} per year; {formatAudPrecise(costs.lifetimeCost)} over ten years. Usage and tariffs are held constant.</p>}
+    {showResults && costs && <Results category={category} kwhPerYear={kwh} stars={stars} state={state} tariffCentsPerKwh={rate} />}
   </main>;
 }
