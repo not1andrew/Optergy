@@ -115,7 +115,7 @@ rectangle(65, 195, 70, 24, [230, 40, 20]);
 rectangle(20, 40, 80, 60, [230, 40, 20]);
 let segmentation: PSM = PSM.AUTO;
 let context = "Energy consumption 250 kWh per month";
-const panelText = "250\n";
+let panelText = "250\n";
 const worker = {
   setParameters: async (parameters: { tessedit_pageseg_mode?: PSM }) => {
     if (parameters.tessedit_pageseg_mode) segmentation = parameters.tessedit_pageseg_mode;
@@ -133,6 +133,22 @@ for (const period of ["per month", "/ week", "per 100 cycles"]) {
   assert.equal(result.kwhPerYear, undefined, `Panel OCR must not override ${period} rejection`);
 }
 
+// Three visible digit groups must not become a two-digit annual value, even if
+// the contextual OCR independently drops the same leading digit.
+for (const x of [76, 95, 114]) rectangle(x, 199, 6, 16, [245, 245, 245]);
+context = "ENERGY RATING\nEnergy consumption 28 kWh per year";
+panelText = "28\n";
+const incomplete = await recogniseLabel(
+  { data, width, height },
+  worker,
+  async () => "test-fixture",
+);
+assert.equal(incomplete.kwhPerYear, undefined);
+assert.ok(incomplete.warnings?.some((warning) => warning.includes("every digit")));
+context = "ENERGY RATING\nEnergy consumption 428 kWh per year";
+panelText = "428\n";
+const complete = await recogniseLabel({ data, width, height }, worker, async () => "test-fixture");
+assert.equal(complete.kwhPerYear, 428);
 console.log(
-  `${cases.length} adversarial parser cases, category/capacity extraction and 3 pipeline guard cases passed. Run npm run benchmark:ocr for the actual photo pipeline.`,
+  `${cases.length} adversarial parser cases, category/capacity extraction and 5 pipeline guard cases passed. Run npm run benchmark:ocr for the actual photo pipeline.`,
 );

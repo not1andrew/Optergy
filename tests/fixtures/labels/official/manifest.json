@@ -1,0 +1,47 @@
+[
+  {
+    "file": "dryer-new.png",
+    "category": "dryer",
+    "kwh": 241,
+    "stars": 3.5,
+    "source": "https://www.energyrating.gov.au/consumer-information/products/clothes-dryers",
+    "url": "https://www.energyrating.gov.au/sites/default/files/2024-10/NEW%20Energy%20Rating%20Label%20for%20Clothes%20dyer%20showing%203.5%20star%20rating%20308x500.png",
+    "notes": "New six-star dryer label: 241 kWh; separate 123 minute program field."
+  },
+  {
+    "file": "dryer-super.png",
+    "category": "dryer",
+    "kwh": 135,
+    "stars": 7,
+    "source": "https://www.energyrating.gov.au/consumer-information/products/clothes-dryers",
+    "url": "https://www.energyrating.gov.au/sites/default/files/2024-10/NEW%20Energy%20Rating%20Label%20for%20Super%20Efficiency%20Clothes%20dryer%20showing%207%20star%20rating%20263x500.png",
+    "notes": "Two-tier star graphic: six base stars plus one upper star; 123 minute program field."
+  },
+  {
+    "file": "dishwasher-new.png",
+    "category": "dishwasher",
+    "kwh": 275,
+    "stars": 3.5,
+    "source": "https://www.energyrating.gov.au/consumer-information/products/dishwashers",
+    "url": "https://www.energyrating.gov.au/sites/default/files/2024-10/NEW%20Energy%20Rating%20Label%20for%20Dishwasher%20showing%203.5%20star%20rating%20286x500.png",
+    "notes": "New dishwasher label: 275 kWh versus 135 minute program field."
+  },
+  {
+    "file": "fridge-half.png",
+    "category": "fridge",
+    "kwh": 400,
+    "stars": 3.5,
+    "source": "https://www.energyrating.gov.au/consumer-information/products/fridges-and-freezers",
+    "url": "https://www.energyrating.gov.au/sites/default/files/2025-03/Energy%20Rating%20Label%20for%20a%20fridge%20showing%20a%203.5%20star%20rating_0.png",
+    "notes": "Refrigerator example: 400 kWh versus 480 litre volume; half-star graphic."
+  },
+  {
+    "file": "fridge-six.png",
+    "category": "fridge",
+    "kwh": 250,
+    "stars": 6,
+    "source": "https://www.energyrating.gov.au/consumer-information/products/fridges-and-freezers",
+    "url": "https://www.energyrating.gov.au/sites/default/files/2025-03/Energy%20Rating%20Label%20for%20a%20fridge%20showing%20a%206%20star%20rating.png",
+    "notes": "Refrigerator example: 250 kWh versus 480 litre volume; full six-star graphic."
+  }
+]

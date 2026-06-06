@@ -11,7 +11,8 @@
     "test": "npm run test:ocr && npm run test:catalog && npm run test:tariffs",
     "db:seed": "tsx scripts/seed-products.mts",
     "test:catalog": "tsx --test tests/catalog.test.mts",
-    "test:ocr": "tsx tests/ocr.test.mts"
+    "test:ocr": "tsx tests/ocr.test.mts",
+    "benchmark:ocr": "tsx scripts/benchmark-ocr.mts"
   },
   "engines": {
     "node": ">=24.0.0"

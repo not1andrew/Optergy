@@ -71,6 +71,31 @@ function isRed(r: number, g: number, b: number) {
   return r > 70 && r > g * 1.45 && r > b * 1.35;
 }
 
+/** Lift underexposed photos uniformly; relative colour differences are retained. */
+export function normaliseExposure(image: Pixels): Pixels {
+  const histogram = new Uint32Array(256);
+  for (let p = 0; p < image.data.length; p += 4)
+    histogram[Math.max(image.data[p], image.data[p + 1], image.data[p + 2])]++;
+  const target = image.width * image.height * 0.99;
+  let accumulated = 0,
+    white = 255;
+  for (let value = 0; value < 256; value++) {
+    accumulated += histogram[value];
+    if (accumulated >= target) {
+      white = value;
+      break;
+    }
+  }
+  if (white >= 215 || white < 50) return image;
+  const gain = Math.min(1.7, 235 / white),
+    data = new Uint8ClampedArray(image.data.length);
+  for (let p = 0; p < image.data.length; p += 4) {
+    for (let c = 0; c < 3; c++) data[p + c] = Math.min(255, image.data[p + c] * gain);
+    data[p + 3] = 255;
+  }
+  return { data, width: image.width, height: image.height };
+}
+
 /** Join hairline cracks in printed regions without filling the much larger star cut-outs. */
 function closeCracks(mask: Uint8Array, width: number, height: number, radius: number): Uint8Array {
   const filter = (input: Uint8Array, erode: boolean) => {
@@ -377,6 +402,30 @@ export function prepareConsumption(image: Pixels, region: Region, red: Uint8Arra
   for (let p = 0; p < keep.length; p++)
     if (keep[p]) data[p * 4] = data[p * 4 + 1] = data[p * 4 + 2] = 0;
   return { data, width, height };
+}
+
+/** Count separated digit columns so OCR cannot silently drop a damaged leading digit. */
+export function countDigitGroups(image: Pixels): number {
+  let groups = 0,
+    gap = image.width,
+    start = -1,
+    last = -1;
+  const minimumGap = Math.max(3, Math.round(image.width * 0.015));
+  for (let x = 0; x < image.width; x++) {
+    let pixels = 0;
+    for (let y = 0; y < image.height; y++)
+      if (image.data[(y * image.width + x) * 4] < 128) pixels++;
+    if (pixels >= Math.max(2, image.height * 0.02)) {
+      if (gap >= minimumGap) {
+        if (start >= 0 && last - start >= 2) groups++;
+        start = x;
+      }
+      last = x;
+      gap = 0;
+    } else gap++;
+  }
+  if (start >= 0 && last - start >= 2) groups++;
+  return groups;
 }
 
 /** Estimate the filled sector of the standard six-star semicircle. Always a reviewable estimate. */

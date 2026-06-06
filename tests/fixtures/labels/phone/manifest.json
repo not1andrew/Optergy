@@ -1,0 +1,60 @@
+[
+  {
+    "file": "sample1 above.jpg",
+    "kwh": 315,
+    "stars": 2,
+    "category": "dryer",
+    "condition": "above"
+  },
+  {
+    "file": "sample1 below.jpg",
+    "kwh": 315,
+    "stars": 2,
+    "category": "dryer",
+    "condition": "below"
+  },
+  {
+    "file": "sample1 close.jpg",
+    "kwh": 315,
+    "stars": 2,
+    "category": "dryer",
+    "condition": "close"
+  },
+  {
+    "file": "sample1 far.jpg",
+    "kwh": 315,
+    "stars": 2,
+    "category": "dryer",
+    "condition": "distant"
+  },
+  {
+    "file": "sample1 left.jpg",
+    "kwh": 315,
+    "stars": 2,
+    "category": "dryer",
+    "condition": "left angle"
+  },
+  {
+    "file": "sample1 right.jpg",
+    "kwh": 315,
+    "stars": 2,
+    "category": "dryer",
+    "condition": "right angle"
+  },
+  { "file": "sample1.jpg", "kwh": 315, "stars": 2, "category": "dryer", "condition": "front" },
+  {
+    "file": "sample2 far.jpg",
+    "kwh": 265,
+    "stars": 4,
+    "category": "washer",
+    "condition": "distant"
+  },
+  { "file": "sample2.jpg", "kwh": 265, "stars": 4, "category": "washer", "condition": "front" },
+  {
+    "file": "sample3.jpg",
+    "kwh": 428,
+    "stars": 3,
+    "category": "fridge",
+    "condition": "faded orange ink, cracked and damaged paper; visually annotated"
+  }
+]

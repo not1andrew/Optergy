@@ -1,10 +1,12 @@
 import type { ImageLike, Worker } from "tesseract.js";
 import { PSM } from "tesseract.js";
 import {
+  countDigitGroups,
   cropPixels,
   estimateGraphicStars,
   estimateLabelTilt,
   findLabelRegions,
+  normaliseExposure,
   prepareConsumption,
   prepareLabelText,
   rotatePixels,
@@ -88,6 +90,7 @@ export async function recogniseLabel(
   let parsed = parseLabelText(rawText);
   const panelValues: number[] = [];
   const panelTexts: string[] = [];
+  let incompletePanel = false;
   for (const panel of regions.consumption) {
     const prepared = prepareConsumption(image, panel, regions.red);
     await worker.setParameters({
@@ -95,10 +98,19 @@ export async function recogniseLabel(
       tessedit_char_whitelist: "0123456789",
     });
     const digitImage = await encode(prepared);
-    const digits = (await worker.recognize(digitImage)).data;
+    let digits = (await worker.recognize(digitImage)).data;
+    const glyphCount = countDigitGroups(prepared);
+    const complete = (text: string) =>
+      glyphCount < 2 || glyphCount > 4 || text.trim().length === glyphCount;
+    if (!complete(digits.text)) {
+      await worker.setParameters({ tessedit_pageseg_mode: PSM.RAW_LINE });
+      const retry = (await worker.recognize(digitImage)).data;
+      if (complete(retry.text)) digits = retry;
+    }
     panelTexts.push(digits.text.trim());
+    if (!complete(digits.text)) incompletePanel = true;
     const value = Number(digits.text.replace(/\s/g, ""));
-    if (/^\d{2,4}$/.test(digits.text.trim()) && plausibleKwh(value)) {
+    if (/^\d{2,4}$/.test(digits.text.trim()) && plausibleKwh(value) && complete(digits.text)) {
       let accepted = digits.confidence >= 35;
       if (!accepted) {
         await worker.setParameters({ tessedit_pageseg_mode: PSM.RAW_LINE });
@@ -143,6 +155,27 @@ export async function recogniseLabel(
       "\n" + (await worker.recognize(await encode(originalLabel), { rotateAuto: true })).data.text;
     parsed = parseLabelText(rawText);
   }
+  // A cracked old label can destroy full-page segmentation. Read the caption and unit
+  // immediately around the detected panel at a larger scale, retaining period checks.
+  if (!hasAnnualContext(rawText) && regions.consumption.length === 1) {
+    const panel = regions.consumption[0];
+    const caption = cropPixels(
+      image,
+      {
+        x: panel.x - panel.width * 0.55,
+        y: panel.y - panel.height * 0.85,
+        width: panel.width * 2.1,
+        height: panel.height * 3.2,
+      },
+      2,
+    );
+    await worker.setParameters({
+      tessedit_pageseg_mode: PSM.SPARSE_TEXT,
+      tessedit_char_whitelist: "",
+    });
+    rawText += "\n" + (await worker.recognize(await encode(normaliseExposure(caption)))).data.text;
+    parsed = parseLabelText(rawText);
+  }
   const hasContext = hasAnnualContext(rawText);
   if (hasContext && !panelValues.length && image !== beforeDeskew) {
     await worker.setParameters({
@@ -154,10 +187,14 @@ export async function recogniseLabel(
       const data = (await worker.recognize(await encode(prepared))).data;
       panelTexts.push("before rotation: " + data.text.trim());
       const value = Number(data.text.trim());
+      const groups = countDigitGroups(prepared);
+      const complete = groups < 2 || groups > 4 || data.text.trim().length === groups;
+      if (!complete) incompletePanel = true;
       if (
         /^\d{2,4}$/.test(data.text.trim()) &&
         plausibleKwh(value) &&
-        data.confidence >= 35
+        data.confidence >= 35 &&
+        complete
       )
         panelValues.push(value);
     }
@@ -179,6 +216,13 @@ export async function recogniseLabel(
     parsed.kwhPerYear = undefined;
     warnings.push(
       "Multiple consumption panels detected. Enter the annual figure for your chosen program.",
+    );
+  }
+  if (!distinct.length && incompletePanel) {
+    parsed.kwhPerYear = undefined;
+    parsed.confidence = "low";
+    warnings.push(
+      "Part of the consumption number is damaged or missing from the scan. Check every digit on the label.",
     );
   }
   if (parsed.stars === undefined && hasContext) {
