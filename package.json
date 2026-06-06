@@ -7,12 +7,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:tariffs": "tsx --test tests/tariffs.test.mts",
-    "test": "npm run test:ocr && npm run test:catalog && npm run test:tariffs",
+    "test:ocr": "tsx tests/ocr.test.mts",
+    "benchmark:ocr": "tsx scripts/benchmark-ocr.mts",
     "db:seed": "tsx scripts/seed-products.mts",
     "test:catalog": "tsx --test tests/catalog.test.mts",
-    "test:ocr": "tsx tests/ocr.test.mts",
-    "benchmark:ocr": "tsx scripts/benchmark-ocr.mts"
+    "test:tariffs": "tsx --test tests/tariffs.test.mts",
+    "test": "npm run test:ocr && npm run test:catalog && npm run test:tariffs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "engines": {
     "node": ">=24.0.0"
