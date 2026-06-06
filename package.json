@@ -8,9 +8,10 @@
     "start": "next start",
     "lint": "eslint",
     "test:tariffs": "tsx --test tests/tariffs.test.mts",
-    "test": "npm run test:catalog && npm run test:tariffs",
+    "test": "npm run test:ocr && npm run test:catalog && npm run test:tariffs",
     "db:seed": "tsx scripts/seed-products.mts",
-    "test:catalog": "tsx --test tests/catalog.test.mts"
+    "test:catalog": "tsx --test tests/catalog.test.mts",
+    "test:ocr": "tsx tests/ocr.test.mts"
   },
   "engines": {
     "node": ">=24.0.0"
