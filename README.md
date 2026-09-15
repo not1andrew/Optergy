@@ -8,7 +8,7 @@ Built with **TypeScript, Next.js, React, Tesseract.js and SQLite**.
 
 - Scan an energy label from a photo or camera capture to read annual kWh and energy stars.
 - Preprocess tilted, faded and cracked labels, then let you check the readings against the photo.
-- Estimate annual and ten-year running costs using **2025–26** regulated electricity benchmarks or your bill rate.
+- Estimate annual and ten-year running costs using a **2026-27** regulated electricity rate for your state, or your bill rate.
 - Compare appliances by category and capacity, with energy ratings, photos, purchase links and payback estimates.
 
 ## Run locally
@@ -36,6 +36,6 @@ The OCR benchmark uses annotated phone photos and official label examples, inclu
 
 ## Data and assumptions
 
-The SQLite catalog contains ten sourced models across five appliance categories. Product records include specification and retailer links; prices and stock are not live. Electricity benchmarks include regulator sources in the app. Where the 2025–26 Default Market Offer specifies an annual bill cap rather than a usage rate, enter the rate from your bill.
+The SQLite catalog contains ten sourced models across five appliance categories. Product records include specification and retailer links; prices and stock are not live. Each state or territory has one 2026-27 usage rate for its main capital-city network, with sources in `src/data/tariffs.ts`: the AER Default Market Offer usage caps (NSW, south-east Queensland, SA), the Victorian Default Offer (CitiPower), Synergy (WA), Aurora Energy Tariff 31 (Tasmania), ActewAGL (ACT) and Power and Water (NT). The rate is pre-filled and editable, so you can enter the usage rate from your bill instead.
 
 Cost comparisons assume constant energy use and tariffs over ten years. They exclude installation, repairs, water and financing. Confirm the label readings, appliance capacity and retailer details before comparing.

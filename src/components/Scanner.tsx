@@ -314,7 +314,11 @@ export default function Scanner({ onResult, onScanStart, categoryId }: ScannerPr
             aria-valuemax={100}
             aria-valuenow={Math.round(state.progress * 100)}
           >
-            <span style={{ width: `${Math.max(5, Math.round(state.progress * 100))}%` }} />
+            <span
+              style={{
+                transform: `scaleX(${Math.max(5, Math.round(state.progress * 100)) / 100})`,
+              }}
+            />
           </div>
           <button type="button" className="button button-secondary" onClick={cancelScan}>
             Cancel scan
@@ -348,7 +352,7 @@ export default function Scanner({ onResult, onScanStart, categoryId }: ScannerPr
             </button>
           </div>
           <p>
-            JPG, PNG or WebP · up to 25 MB. Include the whole label and avoid glare. Your photo is
+            JPG, PNG or WebP, up to 25 MB. Include the whole label and avoid glare. Your photo is
             processed on this device.
           </p>
           <input

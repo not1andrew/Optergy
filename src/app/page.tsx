@@ -1,29 +1,28 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import Scanner, { ScanResult } from "@/components/Scanner";
 import Results from "@/components/Results";
 import ApplianceIcon from "@/components/ApplianceIcon";
+import ExternalIcon from "@/components/ExternalIcon";
 import { CATEGORIES, getCategory } from "@/data/categories";
-import { DEFAULT_STATE_CODE, getState, getTariffOffers, STATES } from "@/data/tariffs";
+import { DEFAULT_STATE_CODE, getState, getTariffOffer, STATES } from "@/data/tariffs";
+import { costBreakdown, formatAud } from "@/lib/calc";
 
-function Arrow() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">
-      <path d="M4 12h15m-6-6 6 6-6 6" />
-    </svg>
-  );
-}
+const EXAMPLE_LABEL_KWH = 241;
+const exampleYearlyCost = costBreakdown(
+  EXAMPLE_LABEL_KWH,
+  getTariffOffer(DEFAULT_STATE_CODE).tariffCentsPerKwh,
+  0,
+).annualCost;
 
-function StepTitle({ number, title, detail }: { number: string; title: string; detail: string }) {
+function StepTitle({ title, detail }: { title: string; detail?: string }) {
   return (
     <div className="step-heading">
-      <span className="step-number">{number}</span>
-      <div>
-        <h2>{title}</h2>
-        <p>{detail}</p>
-      </div>
+      <h2>{title}</h2>
+      {detail && <p>{detail}</p>}
     </div>
   );
 }
@@ -34,16 +33,14 @@ export default function Home() {
   const [starsInput, setStarsInput] = useState("");
   const [scanNote, setScanNote] = useState<string | null>(null);
   const [stateCode, setStateCode] = useState(DEFAULT_STATE_CODE);
-  const initialOffer = getTariffOffers(DEFAULT_STATE_CODE)[0];
-  const [offerId, setOfferId] = useState(initialOffer?.id ?? "");
-  const [tariffInput, setTariffInput] = useState(initialOffer?.tariffCentsPerKwh?.toString() ?? "");
+  const [tariffInput, setTariffInput] = useState(
+    getTariffOffer(DEFAULT_STATE_CODE).tariffCentsPerKwh.toString(),
+  );
   const [showResults, setShowResults] = useState(false);
   const resultRef = useRef<HTMLDivElement>(null);
 
   const category = categoryId ? getCategory(categoryId) : null;
   const state = getState(stateCode);
-  const offers = getTariffOffers(stateCode);
-  const offer = offers.find((item) => item.id === offerId) ?? offers[0];
   const kwh = Number(kwhInput);
   const stars = starsInput === "" ? undefined : Number(starsInput);
   const tariff = Number(tariffInput);
@@ -60,6 +57,8 @@ export default function Home() {
     Number.isFinite(tariff) &&
     tariff > 0 &&
     starsValid;
+
+  const currentStep = showResults && inputsValid ? 3 : category && kwh > 0 ? 2 : 1;
 
   const onScanStart = useCallback(() => {
     setShowResults(false);
@@ -93,10 +92,8 @@ export default function Home() {
   }, [showResults]);
 
   const changeLocation = (nextState: string) => {
-    const next = getTariffOffers(nextState)[0];
     setStateCode(nextState);
-    setOfferId(next?.id ?? "");
-    setTariffInput(next?.tariffCentsPerKwh?.toString() ?? "");
+    setTariffInput(getTariffOffer(nextState).tariffCentsPerKwh.toString());
     setShowResults(false);
   };
 
@@ -105,89 +102,70 @@ export default function Home() {
       <a className="skip-link" href="#calculator">
         Skip to calculator
       </a>
-      <header className="site-header">
-        <Link className="wordmark" href="/" aria-label="Optergy home">
-          <span className="brand-symbol" aria-hidden="true">
-            <svg viewBox="0 0 28 28" fill="none">
-              <path d="M16 3 6 16h8l-2 9 10-14h-8l2-8Z" fill="currentColor" />
-            </svg>
-          </span>
-          optergy<span className="wordmark-dot">.</span>
-        </Link>
-        <a className="header-link" href="#how-it-works">
-          A little label literacy <span aria-hidden="true">↗</span>
-        </a>
+      <header className="site-header container">
+        <nav className="nav-pill" aria-label="Optergy">
+          <Link className="wordmark" href="/" aria-label="Optergy home">
+            <span className="brand-symbol" aria-hidden="true">
+              <svg viewBox="0 0 28 28" fill="none">
+                <path d="M16 3 6 16h8l-2 9 10-14h-8l2-8Z" fill="currentColor" />
+              </svg>
+            </span>
+            <span>
+              optergy<span className="wordmark-dot">.</span>
+            </span>
+          </Link>
+          <a className="header-link" href="#how-it-works">
+            A little label literacy
+          </a>
+        </nav>
       </header>
 
       <main>
-        <section className="hero" aria-labelledby="hero-title">
-          <div className="hero-copy">
-            <p className="eyebrow">
-              <span /> LESS ENERGY. MORE POSSIBILITY.
-            </p>
+        <section className="hero container" aria-labelledby="hero-title">
+          <div className="stage-text">
             <h1 id="hero-title">
               Small label.
               <br />
-              <em>Big picture.</em>
+              Big picture.
             </h1>
-            <p className="hero-description">
-              Turn your appliance&apos;s energy label into dollars and sense. See what it costs to
-              run, and whether a more efficient one adds up.
+            <p className="lead hero-description">
+              Turn your energy label into running costs and upgrade payback.
             </p>
-            <a href="#calculator" className="hero-link">
-              Let&apos;s read your label <Arrow />
+            <a href="#calculator" className="button button-primary hero-link">
+              Let&apos;s read your label
             </a>
           </div>
-          <div className="hero-art" aria-hidden="true">
-            <span className="orbit orbit-one" />
-            <span className="orbit orbit-two" />
-            <div className="illustration-caption caption-top">A little information</div>
-            <div className="label-illustration">
-              <div className="label-stars">
-                ★ ★ ★ ★ <span>★ ★</span>
-              </div>
-              <div className="label-title">
-                ENERGY
-                <br />
-                RATING
-              </div>
-              <div className="label-line" />
-              <p>Energy consumption</p>
-              <strong>
-                240 <span>kWh / year</span>
-              </strong>
-              <div className="label-lines">
-                <i />
-                <i />
-                <i />
-              </div>
-              <span className="example-caption">Illustrative label</span>
+          <figure className="hero-photo">
+            <div className="hero-photo-frame">
+              <Image
+                src="/labels/dryer-label.png"
+                width={308}
+                height={500}
+                priority
+                alt="Energy rating label for a clothes dryer: 3.5 stars and 241 kWh per year"
+              />
             </div>
-            <div className="cost-sticker">
-              <span>See the whole cost</span>
-              <strong>
-                today &amp; tomorrow <span>↗</span>
-              </strong>
-            </div>
-            <div className="illustration-caption caption-bottom">can make a big difference.</div>
-          </div>
+            <figcaption className="reading-tag">
+              <span className="reading-figure">
+                {formatAud(exampleYearlyCost)} <span>a year to run</span>
+              </span>
+            </figcaption>
+          </figure>
         </section>
 
-        <div className="workflow-strip" aria-label="How Optergy works">
-          <span>
-            <b>01</b> Read your label
-          </span>
-          <i />
-          <span>
-            <b>02</b> Set your electricity rate
-          </span>
-          <i />
-          <span>
-            <b>03</b> Find your next move
-          </span>
-        </div>
+        <section className="workflow-band" aria-label="How Optergy works">
+          <ol className="workflow-steps container">
+            {["Read your label", "Set your electricity rate", "Find your next move"].map(
+              (label, index) => (
+                <li key={label} aria-current={currentStep === index + 1 ? "step" : undefined}>
+                  {label}
+                </li>
+              ),
+            )}
+          </ol>
+        </section>
 
-        <div className="workspace" id="calculator">
+        <div className="workspace container" id="calculator">
           <form
             className="calculator"
             onSubmit={(event) => {
@@ -196,11 +174,7 @@ export default function Home() {
             }}
           >
             <section className="form-section category-section">
-              <StepTitle
-                number="01"
-                title="Meet your appliance"
-                detail="Choose the type you want to check."
-              />
+              <StepTitle title="Meet your appliance" detail="Choose the type you want to check." />
               <div className="category-grid" role="group" aria-label="Appliance type">
                 {CATEGORIES.map((item) => (
                   <button
@@ -218,9 +192,6 @@ export default function Home() {
                   >
                     <ApplianceIcon kind={item.id} />
                     <span>{item.label}</span>
-                    <span className="selected-check" aria-hidden="true">
-                      ✓
-                    </span>
                   </button>
                 ))}
               </div>
@@ -230,7 +201,6 @@ export default function Home() {
               <>
                 <section className="form-section">
                   <StepTitle
-                    number="02"
                     title="A photo is a good start"
                     detail="Scan your energy label, then check the numbers below."
                   />
@@ -290,7 +260,7 @@ export default function Home() {
                             setStarsInput(event.target.value);
                             setShowResults(false);
                           }}
-                          placeholder={"0.5–" + category.maxStars}
+                          placeholder={"0.5 to " + category.maxStars}
                           aria-invalid={!starsValid}
                         />
                         <span>stars</span>
@@ -310,11 +280,7 @@ export default function Home() {
                 </section>
 
                 <section className="form-section">
-                  <StepTitle
-                    number="03"
-                    title="Put a price on your power"
-                    detail="Use a 2025–26 regulated benchmark or your bill's usage rate."
-                  />
+                  <StepTitle title="Put a price on your power" />
                   <div className="field-grid">
                     <label className="field field-full">
                       <span>State or territory</span>
@@ -329,26 +295,6 @@ export default function Home() {
                         ))}
                       </select>
                     </label>
-                    {offers.length > 1 && (
-                      <label className="field field-full">
-                        <span>Electricity network / region</span>
-                        <select
-                          value={offer?.id ?? ""}
-                          onChange={(event) => {
-                            const next = offers.find((item) => item.id === event.target.value);
-                            setOfferId(event.target.value);
-                            setTariffInput(next?.tariffCentsPerKwh?.toString() ?? "");
-                            setShowResults(false);
-                          }}
-                        >
-                          {offers.map((item) => (
-                            <option key={item.id} value={item.id}>
-                              {item.region}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                    )}
                     <label className="field">
                       <span>
                         Electricity usage rate <small>Editable</small>
@@ -377,39 +323,18 @@ export default function Home() {
                       don&apos;t change when you swap an appliance.
                     </p>
                   </div>
-                  {offer && (
-                    <div className="tariff-source" id="tariff-help">
-                      <p>
-                        <span className="source-dot" />
-                        {offer.name}
-                      </p>
-                      <p>{offer.note}</p>
-                      {offer.annualReferenceBillAud !== undefined && (
-                        <p>
-                          Published annual reference bill: $
-                          {offer.annualReferenceBillAud.toLocaleString()} at{" "}
-                          {offer.annualReferenceKwh?.toLocaleString()} kWh. This includes supply
-                          charges and cannot be used as an appliance usage rate.
-                        </p>
-                      )}
-                      <a href={offer.sourceUrl} target="_blank" rel="noreferrer">
-                        {offer.sourceName} <span aria-hidden="true">↗</span>
-                      </a>
-                      <span>
-                        {" "}
-                        · {offer.effectiveFrom} to {offer.effectiveTo}
-                      </span>
-                    </div>
-                  )}
+                  <p className="field-help" id="tariff-help">
+                    Using an indicative rate for {state.name}.
+                  </p>
                 </section>
 
                 <div className="calculate-action">
                   <button
-                    className="button-primary calculate-button"
+                    className="button button-primary calculate-button"
                     type="submit"
                     disabled={!inputsValid}
                   >
-                    Confirm &amp; calculate <Arrow />
+                    Confirm &amp; calculate
                   </button>
                   <p>
                     {inputsValid
@@ -420,7 +345,6 @@ export default function Home() {
               </>
             ) : (
               <div className="getting-started">
-                <span aria-hidden="true">↳</span>
                 <p>
                   <strong>A clearer view starts here.</strong>
                   <br />
@@ -432,11 +356,7 @@ export default function Home() {
 
           <aside className="guide-rail" id="how-it-works">
             <div className="guide-card">
-              <p className="eyebrow">THE LABEL, EXPLAINED</p>
-              <h2>
-                Two numbers.
-                <br />A better decision.
-              </h2>
+              <h2>Reading the label</h2>
               <div className="guide-item">
                 <span className="guide-symbol" aria-hidden="true">
                   ★
@@ -466,27 +386,9 @@ export default function Home() {
                 target="_blank"
                 rel="noreferrer"
               >
-                Get to know the label <span aria-hidden="true">↗</span>
+                Get to know the label
+                <ExternalIcon />
               </a>
-            </div>
-            <div className="photo-tip">
-              <svg
-                viewBox="0 0 36 36"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.4"
-                aria-hidden="true"
-              >
-                <path d="M7 11h5l2-4h8l2 4h5v18H7z" />
-                <circle cx="18" cy="20" r="5" />
-                <path d="M3 7V3h5m20 0h5v4M3 29v4h5m20 0h5v-4" />
-              </svg>
-              <h3>Give your label its close-up</h3>
-              <p>
-                Fill the photo with the whole energy label. Shoot straight-on in even light and keep
-                the kWh number sharp.
-              </p>
-              <span>Photos are processed in your browser.</span>
             </div>
             <p className="keep-note">
               The greenest upgrade can be keeping what you have. We&apos;ll show the savings and
@@ -514,17 +416,19 @@ export default function Home() {
       </main>
 
       <footer className="site-footer">
-        <Link className="footer-brand" href="/">
-          optergy.
-        </Link>
-        <p>
-          A little clarity for a lower-energy home.
-          <br />
-          <span>Australian energy labels · Built for an energy hackathon</span>
-        </p>
-        <a href="https://www.energyrating.gov.au" target="_blank" rel="noreferrer">
-          Energy Rating Australia ↗
-        </a>
+        <div className="container footer-inner">
+          <Link className="footer-brand" href="/">
+            optergy<span className="wordmark-dot">.</span>
+          </Link>
+          <div className="footer-notes">
+            <p>A little clarity for a lower-energy home.</p>
+            <p className="footer-meta">Australian energy labels</p>
+          </div>
+          <a href="https://www.energyrating.gov.au" target="_blank" rel="noreferrer">
+            Energy Rating Australia
+            <ExternalIcon />
+          </a>
+        </div>
       </footer>
     </div>
   );

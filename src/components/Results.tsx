@@ -6,6 +6,7 @@ import type { ApplianceCategory } from "@/data/categories";
 import { EMISSIONS_SOURCE_URL, type StateInfo } from "@/data/tariffs";
 import type { ProductResponse } from "@/lib/products";
 import ApplianceIcon from "@/components/ApplianceIcon";
+import ExternalIcon from "@/components/ExternalIcon";
 import {
   buildRecommendations,
   costBreakdown,
@@ -102,11 +103,10 @@ export default function Results({
       <section className="cost-summary" aria-labelledby="result-title">
         <div className="result-heading">
           <div>
-            <p className="eyebrow">YOUR ENERGY, IN PERSPECTIVE</p>
-            <h2 id="result-title">Here&apos;s the bigger picture.</h2>
+            <h2 id="result-title">Your energy, in perspective</h2>
             <p>
               {category.label}
-              {stars !== undefined ? " · " + stars + " energy stars" : ""}
+              {stars !== undefined ? ", " + stars + " energy stars" : ""}
             </p>
           </div>
           <ApplianceIcon kind={category.id} />
@@ -147,16 +147,13 @@ export default function Results({
       <section className="recommendations" aria-labelledby="recommendations-title">
         <div className="recommendation-heading">
           <div>
-            <p className="eyebrow">YOUR NEXT MOVE</p>
             <h2 id="recommendations-title">Is an upgrade worth it?</h2>
             <p>
               Lower-energy options, ordered by the time energy savings take to cover the purchase
               price.
             </p>
           </div>
-          <span className="catalog-badge">
-            <span /> Sourced appliance catalog
-          </span>
+          <p className="catalog-badge">Sourced appliance catalog</p>
         </div>
         {category.capacityUnit && (
           <form
@@ -206,7 +203,7 @@ export default function Results({
 
         {catalog.phase === "loading" && (
           <div className="catalog-message" role="status">
-            <span className="loading-dot" /> Checking the appliance catalog…
+            <span className="loading-dot" aria-hidden="true" /> Checking the appliance catalog…
           </div>
         )}
         {catalog.phase === "error" && (
@@ -220,7 +217,7 @@ export default function Results({
                 setRetry((value) => value + 1);
               }}
             >
-              Try again ↗
+              Try again
             </button>
           </div>
         )}
@@ -228,7 +225,6 @@ export default function Results({
           <>
             {recommendations.length === 0 ? (
               <div className="catalog-message empty-catalog">
-                <span aria-hidden="true">↳</span>
                 <div>
                   <h3>
                     {catalog.data.products.length === 0
@@ -245,7 +241,8 @@ export default function Results({
                     target="_blank"
                     rel="noreferrer"
                   >
-                    Explore the Energy Rating register ↗
+                    Explore the Energy Rating register
+                    <ExternalIcon />
                   </a>
                 </div>
               </div>
@@ -254,7 +251,7 @@ export default function Results({
                 <p className="comparison-count">
                   {recommendations.length} lower-energy option
                   {recommendations.length === 1 ? "" : "s"}
-                  {minCapacity ? " · at least " + minCapacity + " " + category.capacityUnit : ""}
+                  {minCapacity ? ", at least " + minCapacity + " " + category.capacityUnit : ""}
                   <span>All prices in AUD</span>
                 </p>
                 <ol className="product-list">
@@ -281,7 +278,7 @@ export default function Results({
                         <p className="product-brand">
                           {rec.product.brand}{" "}
                           <span>
-                            · {rec.product.capacity} {rec.product.capacityUnit}
+                            {rec.product.capacity} {rec.product.capacityUnit}
                           </span>
                         </p>
                         <h3>{rec.product.name}</h3>
@@ -300,7 +297,8 @@ export default function Results({
                           target="_blank"
                           rel="noreferrer"
                         >
-                          View appliance <span aria-hidden="true">↗</span>
+                          View appliance
+                          <ExternalIcon />
                         </a>
                         <p className="price-note">
                           Check price &amp; availability with the retailer
@@ -347,7 +345,8 @@ export default function Results({
                         <p>{rec.product.energyBasis}</p>
                         <p>
                           <a href={rec.product.specificationUrl} target="_blank" rel="noreferrer">
-                            View specification source ↗
+                            View specification source
+                            <ExternalIcon />
                           </a>
                         </p>
                         <p>
@@ -377,7 +376,8 @@ export default function Results({
           <p>
             {state.emissionsNote}{" "}
             <a href={EMISSIONS_SOURCE_URL} target="_blank" rel="noreferrer">
-              National Greenhouse Accounts factors ↗
+              National Greenhouse Accounts factors
+              <ExternalIcon />
             </a>
           </p>
         </div>
